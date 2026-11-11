@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Mode Switcher",
+    "description": "Toggle Plan and Build with Tab; each mode remembers its own model and reasoning effort across restarts."
+  }
+}

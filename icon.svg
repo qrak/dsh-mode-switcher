@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Mode switcher">
+  <rect x="3" y="3" width="58" height="58" rx="14" fill="#161a1f"/>
+  <path d="M17 3h-1C7.6 3 3 8.4 3 16v32c0 7.6 4.6 13 13 13h1V3Z" fill="#d99a3e"/>
+  <path d="M47 3h1c8.4 0 13 5.4 13 13v32c0 7.6-4.6 13-13 13h-1V3Z" fill="#2f6fb3"/>
+  <path d="M17 3h14v58H17V3Z" fill="#20262e"/>
+  <path d="M24 25l7 7-7 7" fill="none" stroke="#f4f6f8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M35 39h7" fill="none" stroke="#f4f6f8" stroke-width="3" stroke-linecap="round"/>
+</svg>

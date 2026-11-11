@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Przełącznik trybów",
+    "description": "Przełączaj Plan i Build klawiszem Tab; każdy tryb pamięta własny model i poziom rozumowania między restartami."
+  }
+}
