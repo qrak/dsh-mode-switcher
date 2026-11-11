@@ -22,7 +22,7 @@ This is an independent, MIT-licensed implementation of the idea popularized by [
 **CLI profiles:**
 
 ```bash
-dsh plugin add git+https://github.com/qrak/dsh-mode-switcher.git#v1.0.0
+dsh plugin add git+https://github.com/qrak/dsh-mode-switcher.git#v1.0.1
 ```
 
 The `desktop` profile is managed by Electron; use its Plugins UI instead of `dsh plugin add` there.
@@ -39,6 +39,7 @@ The chip replaces the native Plan-only chip, so it is always visible: `🛠️ B
 ## Behaviour and limits
 
 - Presets are **global across sessions** and stored in `localStorage` (Desktop `dsh-app://app`) plus the cookie `dsh_mode_switcher_presets_v1` (browser web UI). If both are blocked, they fall back to memory for the page lifetime. Clearing site data resets them; each mode then re-seeds from the model in use.
+- Toggle commands are **not echoed into the chat**: the plugin hides the generic `/plan` command rows, so repeated mode switches do not flood the transcript. The chip is the mode indicator.
 - DSH saves the selected model as the deployment default as well; after a mode switch, new sessions start with the model of the mode used last. This is host behaviour, not a plugin setting.
 - The plugin intercepts `Tab` only while the composer has focus and no completion popup is open. If a future DSH version gives `Tab` a different meaning in the composer, disable the plugin or remove the key listener.
 - If the saved model is no longer available, the switch still happens and the warning explains why the model was not restored.

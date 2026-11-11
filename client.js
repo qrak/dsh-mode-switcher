@@ -512,12 +512,15 @@ window.__ModuleLoader__.load({
         ctx.effect(() => ctx.locale.register(NS, { en: I18N.en, pl: I18N.pl, zh: I18N.zh }), 'mode-switcher: dictionaries');
 
         ctx.effect(() => {
+          let tabLatch = false;
           const onKeyDown = (event) => {
             if (event.defaultPrevented) return;
             if (!active.toggle || active.locked) return;
             if (!toggleTabAllowed(event, composerMenuOpen())) return;
             const element = document.activeElement;
             if (!element || !isComposerElement(element)) return;
+            if (tabLatch) return;
+            tabLatch = true;
             event.preventDefault();
             event.stopPropagation();
             Promise.resolve(active.toggle(active.isPlan, active.currentSelection)).then(
@@ -525,8 +528,20 @@ window.__ModuleLoader__.load({
               (failure) => active.report?.({ ok: false, kind: 'command', error: errorMessage(failure) }),
             );
           };
+          const onKeyUp = (event) => {
+            if (event.key === 'Tab') tabLatch = false;
+          };
+          const onBlur = () => {
+            tabLatch = false;
+          };
           window.addEventListener('keydown', onKeyDown, true);
-          return () => window.removeEventListener('keydown', onKeyDown, true);
+          window.addEventListener('keyup', onKeyUp, true);
+          window.addEventListener('blur', onBlur);
+          return () => {
+            window.removeEventListener('keydown', onKeyDown, true);
+            window.removeEventListener('keyup', onKeyUp, true);
+            window.removeEventListener('blur', onBlur);
+          };
         }, 'mode-switcher: tab listener');
 
         ctx.slots.inject('conversation.input.plan', () => ctx.slots.register({
@@ -539,6 +554,13 @@ window.__ModuleLoader__.load({
             applyModel: (model) => selectSessionModel(ctx, sessionId, model),
           }),
         }, ModeChip));
+
+        // The chip already shows the mode; echoing every toggle as a /plan command row floods the chat.
+        ctx.slots.inject('conversation.chat.commandview', () => ctx.slots.register({
+          name: 'conversation.chat.commandview',
+          key: 'plan',
+          priority: -10,
+        }, () => null));
       },
       __test: {
         NS,

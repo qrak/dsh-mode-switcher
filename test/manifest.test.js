@@ -21,6 +21,8 @@ test('bundle patch and client registration use the package name', () => {
   assert.ok(patch.includes("name: '@qrak/dsh-mode-switcher'"));
   assert.ok(client.includes("id: '@qrak/dsh-mode-switcher'"));
   assert.ok(client.includes("name: 'conversation.input.plan'"));
+  assert.ok(client.includes("name: 'conversation.chat.commandview'"));
+  assert.ok(client.includes("key: 'plan'"));
   assert.equal(packageJson.dsh.client.platform, 'web');
   assert.equal(packageJson.dsh.client.immediately, true);
   assert.ok(packageJson.dsh.client.inject.length > 0);
