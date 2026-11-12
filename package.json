@@ -1,6 +1,6 @@
 {
   "name": "@qrak/dsh-mode-switcher",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Tab toggles Plan/Build in DeepSeek Harness; each mode keeps its own model and reasoning preset across restarts.",
   "type": "module",
   "exports": {
@@ -50,6 +50,9 @@
   ],
   "author": "qrak",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/qrak/dsh-mode-switcher.git"

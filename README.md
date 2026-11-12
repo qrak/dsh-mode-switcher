@@ -17,15 +17,19 @@ This is an independent, MIT-licensed implementation of the idea popularized by [
 
 ## Install
 
-**Desktop app:** Settings → Plugins → install this bundle from this directory.
-
-**CLI profiles:**
-
 ```bash
-dsh plugin add git+https://github.com/qrak/dsh-mode-switcher.git#v1.0.1
+dsh plugin --profile <your-profile> add @qrak/dsh-mode-switcher
 ```
 
-The `desktop` profile is managed by Electron; use its Plugins UI instead of `dsh plugin add` there.
+Replace `<your-profile>` with the profile you actually run. The DeepSeek Harness Desktop app keeps its profile at `desktop`, but Electron manages that one: there, install from **Settings → Plugins** and pick `@qrak/dsh-mode-switcher` instead of running the CLI.
+
+No build step, no dependencies, nothing to configure after install.
+
+To test a change that is not released yet:
+
+```bash
+dsh plugin add git+https://github.com/qrak/dsh-mode-switcher.git#v1.0.2
+```
 
 ## Usage
 
