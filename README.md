@@ -7,6 +7,16 @@ Switch **Plan** and **Build** in [DeepSeek Harness](https://github.com/deepseek-
 
 This is an independent, MIT-licensed implementation of the idea popularized by [gaoyinxin/dsh-mode-switcher](https://github.com/gaoyinxin/dsh-mode-switcher). It contains no code or assets from that project.
 
+## Screenshots
+
+**Build** — `🛠️ Build ⇥ Tab`
+
+![Build mode chip in the composer](https://raw.githubusercontent.com/qrak/dsh-mode-switcher/main/docs/build-mode.jpg)
+
+**Plan** — `📋 Plan ⇥ Tab`
+
+![Plan mode chip in the composer](https://raw.githubusercontent.com/qrak/dsh-mode-switcher/main/docs/plan-mode.jpg)
+
 ## Why this implementation
 
 - **Persistence that fits each surface.** The Desktop window runs on the stable `dsh-app://app` origin, so presets live in `localStorage` and survive restarts. The browser web UI gets a random `127.0.0.1` port each launch, so the plugin also writes a host-scoped cookie and reads whichever copy is newest.
@@ -28,7 +38,7 @@ No build step, no dependencies, nothing to configure after install.
 To test a change that is not released yet:
 
 ```bash
-dsh plugin add git+https://github.com/qrak/dsh-mode-switcher.git#v1.0.2
+dsh plugin add git+https://github.com/qrak/dsh-mode-switcher.git#v1.0.3
 ```
 
 ## Usage
@@ -38,7 +48,7 @@ dsh plugin add git+https://github.com/qrak/dsh-mode-switcher.git#v1.0.2
 3. Switch back and forth; each mode is restored automatically, and the chip tooltip shows the saved Plan and Build presets.
 4. The presets also apply when the mode changes via `/plan`, `/plan off`, or approving a plan.
 
-The chip replaces the native Plan-only chip, so it is always visible: `🛠️ Build ⇥ Tab` or `📋 Plan ⇥ Tab`.
+The chip replaces the native Plan-only chip, so it is always visible: `🛠️ Build ⇥ Tab` or `📋 Plan ⇥ Tab` (see [Screenshots](#screenshots)).
 
 ## Behaviour and limits
 
