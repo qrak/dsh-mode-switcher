@@ -70,7 +70,7 @@ The chip replaces the native Plan-only chip, so it is always visible: `🛠️ B
 
 ## Compatibility
 
-Built and verified against DSH `0.2.2-rc.1`. It uses the public client surface: `ctx.slots` (`conversation.input.plan`), the `plan` and `modelSelection` projections, `remote.commands.execute`, `remote.session.selectModel`, and `ctx.locale`. A future DSH release may change these; the plugin is versioned and pinned, and the plain `/plan` command keeps working without it.
+Built and verified against DSH `0.2.2-rc.3` (Desktop `0.2.2-rc.3`); `engines.dsh` allows `>=0.2.0-rc.1`. It uses the public client surface: `ctx.slots` (`conversation.input.plan`), the `plan` and `modelSelection` projections, `remote.commands.execute`, `remote.session.selectModel`, and `ctx.locale`. A future DSH release may change these; the plugin is versioned and pinned, and the plain `/plan` command keeps working without it.
 
 ## Development
 
