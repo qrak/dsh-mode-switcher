@@ -27,19 +27,27 @@ This is an independent, MIT-licensed implementation of the idea popularized by [
 
 ## Install
 
+**DeepSeek Harness Desktop.** Its profile is `desktop` and Electron manages it, so install from the UI: open **Plugins** in the sidebar (Settings holds only the read-only **Built-in plugins** inventory), choose **Add plugin**, enter `@qrak/dsh-mode-switcher`, confirm **Install**.
+
+**Any other profile** (web, TUI, your own), from the CLI — `dsh plugin` forwards its arguments to pnpm inside the profile directory:
+
 ```bash
 dsh plugin --profile <your-profile> add @qrak/dsh-mode-switcher
 ```
 
-Replace `<your-profile>` with the profile you actually run. The DeepSeek Harness Desktop app keeps its profile at `desktop`, but Electron manages that one, so install it in the UI instead of the CLI: open **Plugins** in the sidebar (Settings only holds the read-only **Built-in plugins** inventory), choose **Add plugin**, enter `@qrak/dsh-mode-switcher` as the package name, and confirm with **Install**.
+`--profile` may be omitted to use the profile `dsh` boots by default.
 
-No build step, no dependencies, nothing to configure after install.
+Updating: re-run the install with `@latest`, or Install again in the Desktop UI, then **restart DSH** — the running process keeps the loaded plugin code in memory, so a package update alone changes nothing until the app restarts.
 
-To test a change that is not released yet:
+To try a change that is not released yet, install from the repository:
 
 ```bash
-dsh plugin add git+https://github.com/qrak/dsh-mode-switcher.git#v1.0.3
+dsh plugin --profile <your-profile> add git+https://github.com/qrak/dsh-mode-switcher.git#main
 ```
+
+Released versions are tagged `v<version>` (`v1.0.0` … `v1.0.4`), so `#v1.0.4` pins one exactly.
+
+No build step, no dependencies, nothing to configure after install.
 
 ## Usage
 

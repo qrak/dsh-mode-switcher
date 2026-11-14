@@ -1,0 +1,83 @@
+name: release
+
+# One GitHub release per published version, created without a manual step.
+#
+# `npm publish` stays manual (staged publish + WebAuthn), so this job waits until the
+# version in package.json is actually on npm; a push that only bumps the file creates
+# nothing and the next push retries. Tag is `v<version>`, matching v1.0.0 … v1.0.4.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: tag + release the published version
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read the version
+        id: version
+        run: |
+          set -euo pipefail
+          echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Nothing to do unless the version is tagged nowhere and published on npm
+        id: gate
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+            echo "v$VERSION is already tagged"
+            echo "go=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if ! npm view "@qrak/dsh-mode-switcher@$VERSION" version >/dev/null 2>&1; then
+            echo "v$VERSION is not on npm yet, nothing to release"
+            echo "go=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "go=true" >> "$GITHUB_OUTPUT"
+
+      - name: Tag and publish the release
+        if: steps.gate.outputs.go == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          prev=$(git tag -l 'v*' --sort=-v:refname | grep -vx "v$VERSION" | head -n1 || true)
+          range=""
+          [ -z "$prev" ] || range="$prev..HEAD"
+          notes=$(git log -40 --no-merges --pretty='- %s (%h)' $range)
+          {
+            echo "Published on npm as \`@qrak/dsh-mode-switcher@$VERSION\`."
+            echo
+            echo "Install: \`dsh plugin --profile <your-profile> add @qrak/dsh-mode-switcher@$VERSION\`, or Install in the Desktop Plugins page. Restart DSH afterwards."
+            echo
+            echo "### Changes"
+            if [ -n "$notes" ]; then echo "$notes"; else echo "- no commits since $prev"; fi
+            if [ -n "$prev" ]; then
+              echo
+              echo "**Full diff**: https://github.com/$REPO/compare/$prev...v$VERSION"
+            fi
+          } > "$RUNNER_TEMP/notes.md"
+          git tag -a "v$VERSION" -m "release $VERSION"
+          git push origin "refs/tags/v$VERSION"
+          gh release create "v$VERSION" --repo "$REPO" --title "v$VERSION" --notes-file "$RUNNER_TEMP/notes.md" --latest
