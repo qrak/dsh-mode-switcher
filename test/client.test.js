@@ -156,3 +156,66 @@ test('presets persist through the cookie and the localStorage fallback', () => {
   assert.ok(source.includes('document.cookie'));
   assert.ok(source.includes('localStorage.setItem'));
 });
+
+// Mirrors the DOM the plugin lives in: one composer card per session, input and chip as siblings.
+function fakeComposer(label) {
+  const chip = { tag: `chip-${label}`, disabled: false, clicks: 0, click() { chip.clicks += 1; } };
+  const card = {
+    tag: `card-${label}`,
+    parentElement: null,
+    hasAttribute: (name) => name === 'data-composer-card',
+    querySelector: (selector) => (selector === 'button[data-mode-switcher]' ? chip : null),
+  };
+  const input = {
+    tag: `input-${label}`,
+    parentElement: card,
+    hasAttribute: () => false,
+    querySelector: () => null,
+  };
+  return { card, chip, input };
+}
+
+test('chipFor returns the chip of the composer holding the caret', () => {
+  const a = fakeComposer('a');
+  const b = fakeComposer('b');
+  assert.equal(core.chipFor(a.input), a.chip);
+  assert.equal(core.chipFor(b.input), b.chip);
+  assert.equal(core.chipFor(a.card), a.chip);
+});
+
+test('chipFor returns null outside a composer card', () => {
+  const orphan = { parentElement: null, hasAttribute: () => false, querySelector: () => null };
+  assert.equal(core.chipFor(orphan), null);
+  assert.equal(core.chipFor(null), null);
+  assert.equal(core.chipFor(undefined), null);
+});
+
+test('toggleMode ignores a repeat press inside the guard window', async () => {
+  core.savePresets({ plan: null, build: null });
+  const calls = [];
+  const ctx = {
+    remote: {
+      commands: { execute: async (sessionId, command) => { calls.push(`${sessionId}:${command}`); return { ok: true, value: {} }; } },
+      session: { selectModel: async () => {} },
+    },
+  };
+  const build = model('build', 'high');
+
+  const first = await core.toggleMode(ctx, 'session-a', false, build);
+  assert.equal(first.ok, true);
+  assert.deepEqual(calls, ['session-a:/plan']);
+
+  const repeat = await core.toggleMode(ctx, 'session-a', false, build);
+  assert.equal(repeat.ok, false);
+  assert.equal(repeat.silent, true);
+  assert.deepEqual(calls, ['session-a:/plan'], 'second press inside the window must not reach the host');
+
+  const other = await core.toggleMode(ctx, 'session-b', false, build);
+  assert.equal(other.ok, true);
+  assert.deepEqual(calls, ['session-a:/plan', 'session-b:/plan'], 'another session is not throttled');
+
+  await new Promise((resolve) => setTimeout(resolve, core.REPEAT_GUARD_MS + 50));
+  const later = await core.toggleMode(ctx, 'session-a', true, build);
+  assert.equal(later.ok, true);
+  assert.deepEqual(calls.at(-1), 'session-a:/plan off');
+});

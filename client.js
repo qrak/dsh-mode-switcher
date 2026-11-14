@@ -15,6 +15,7 @@ window.__ModuleLoader__.load({
     const NS = 'mode-switcher';
     const PRESET_COOKIE = 'dsh_mode_switcher_presets_v1';
     const PRESET_MAX_AGE = 34560000;
+    const REPEAT_GUARD_MS = 1000;
 
     const I18N = {
       en: {
@@ -241,7 +242,7 @@ window.__ModuleLoader__.load({
     function getTracker(sessionId) {
       let tracker = sessionTrackers.get(sessionId);
       if (tracker === undefined) {
-        tracker = { state: { mode: null, model: null }, switching: false };
+        tracker = { state: { mode: null, model: null }, switching: false, lastSwitchAt: 0 };
         sessionTrackers.set(sessionId, tracker);
       }
       return tracker;
@@ -257,6 +258,8 @@ window.__ModuleLoader__.load({
       if (!sessionId) return { ok: false, kind: 'command', error: 'no active session' };
       const tracker = getTracker(sessionId);
       if (tracker.switching) return { ok: false, silent: true, error: '' };
+      // A second press right after the first would undo it and queue a stale "switched" notice.
+      if (Date.now() - tracker.lastSwitchAt < REPEAT_GUARD_MS) return { ok: false, silent: true, error: '' };
 
       const current = normalizeModel(currentSelection);
       const targetPlan = !Boolean(currentPlan);
@@ -275,6 +278,7 @@ window.__ModuleLoader__.load({
       }
 
       tracker.switching = true;
+      tracker.lastSwitchAt = Date.now();
       let commandOk = false;
       try {
         const result = await ctx.remote.commands.execute(sessionId, targetPlan ? '/plan' : '/plan off', []);
@@ -315,14 +319,20 @@ window.__ModuleLoader__.load({
         document.querySelector('[role="listbox"]') !== null;
     }
 
-    const active = {
-      sessionId: null,
-      isPlan: false,
-      locked: false,
-      toggle: null,
-      currentSelection: null,
-      report: null,
-    };
+    // The chip of the composer the caret is in. A module-level "last rendered chip"
+    // would follow whichever session painted last, which may not be the one on screen.
+    function chipFor(element) {
+      let node = element;
+      while (node !== null && node !== undefined && typeof node === 'object') {
+        if (typeof node.querySelector === 'function') {
+          const chip = node.querySelector('button[data-mode-switcher]');
+          if (chip !== null) return chip;
+        }
+        if (typeof node.hasAttribute === 'function' && node.hasAttribute('data-composer-card')) return null;
+        node = node.parentElement;
+      }
+      return null;
+    }
 
     function ModeChip(props) {
       const { sessionId, locked, useProjection, toggleMode: toggle, applyModel, t } = props;
@@ -357,21 +367,6 @@ window.__ModuleLoader__.load({
           message: result.error || '',
         }));
       };
-
-      useEffect(() => {
-        active.sessionId = sessionId;
-        active.isPlan = target;
-        active.locked = Boolean(locked);
-        active.toggle = toggle;
-        active.currentSelection = currentSelection;
-        active.report = report;
-        return () => {
-          if (active.sessionId === sessionId) {
-            active.toggle = null;
-            active.report = null;
-          }
-        };
-      }, [sessionId, target, locked, toggle, currentSelection, report]);
 
       useEffect(() => {
         if (!sessionId || plan === undefined) return;
@@ -515,18 +510,16 @@ window.__ModuleLoader__.load({
           let tabLatch = false;
           const onKeyDown = (event) => {
             if (event.defaultPrevented) return;
-            if (!active.toggle || active.locked) return;
             if (!toggleTabAllowed(event, composerMenuOpen())) return;
             const element = document.activeElement;
             if (!element || !isComposerElement(element)) return;
+            const chip = chipFor(element);
+            if (chip === null || chip.disabled === true) return;
             if (tabLatch) return;
             tabLatch = true;
             event.preventDefault();
             event.stopPropagation();
-            Promise.resolve(active.toggle(active.isPlan, active.currentSelection)).then(
-              (result) => active.report?.(result),
-              (failure) => active.report?.({ ok: false, kind: 'command', error: errorMessage(failure) }),
-            );
+            chip.click();
           };
           const onKeyUp = (event) => {
             if (event.key === 'Tab') tabLatch = false;
@@ -576,6 +569,9 @@ window.__ModuleLoader__.load({
         savePresets,
         storageStatus,
         toggleTabAllowed,
+        chipFor,
+        toggleMode,
+        REPEAT_GUARD_MS,
         decide,
       },
     };

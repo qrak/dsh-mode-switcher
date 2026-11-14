@@ -23,7 +23,7 @@ This is an independent, MIT-licensed implementation of the idea popularized by [
 - **Only plain `Tab`.** `Shift+Tab`, `Ctrl+Tab`, `Alt+Tab` and `Meta+Tab` are left to the application; so are IME composition and auto-repeat.
 - **Errors are visible.** If a saved model was removed or an effort level is unsupported, the chip shows a warning, the stale preset is cleared, and the mode still switches.
 - **No network, no telemetry, no secrets.** The plugin talks only to the DSH session API and stores a small JSON preset in browser storage.
-- **Tested.** The preset logic, cookie parser, keyboard predicate and the mode state machine have unit tests, and CI runs them on Node 22 and 24.
+- **Tested.** The preset logic, cookie parser, keyboard predicate, chip lookup and the mode state machine have unit tests, and CI runs them on Node 22 and 24.
 
 ## Install
 
@@ -56,6 +56,8 @@ The chip replaces the native Plan-only chip, so it is always visible: `🛠️ B
 - Toggle commands are **not echoed into the chat**: the plugin hides the generic `/plan` command rows, so repeated mode switches do not flood the transcript. The chip is the mode indicator.
 - DSH saves the selected model as the deployment default as well; after a mode switch, new sessions start with the model of the mode used last. This is host behaviour, not a plugin setting.
 - The plugin intercepts `Tab` only while the composer has focus and no completion popup is open. If a future DSH version gives `Tab` a different meaning in the composer, disable the plugin or remove the key listener.
+- `Tab` toggles **the composer the caret is in**, resolved from the focused element, not the conversation painted last. With several conversations mounted, a global "last chip" could target the wrong session.
+- A second toggle of the same session within `1 s` is ignored, because it would undo the first one and leave a stale "switched to plan mode" notice queued in the chat.
 - If the saved model is no longer available, the switch still happens and the warning explains why the model was not restored.
 
 ## Compatibility
