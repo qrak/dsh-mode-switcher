@@ -45,7 +45,7 @@ To try a change that is not released yet, install from the repository:
 dsh plugin --profile <your-profile> add git+https://github.com/qrak/dsh-mode-switcher.git#main
 ```
 
-Released versions are tagged `v<version>` (`v1.0.0` … `v1.0.4`), so `#v1.0.4` pins one exactly.
+Released versions are tagged `v<version>` (`v1.0.0` … `v1.0.5`), so `#v1.0.5` pins one exactly.
 
 No build step, no dependencies, nothing to configure after install.
 
