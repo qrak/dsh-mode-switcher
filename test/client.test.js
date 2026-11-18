@@ -115,12 +115,13 @@ test('toggleTabAllowed only accepts plain, non-composing Tab', () => {
 
 const model = (name, effort) => ({ provider: 'p', model: name, ...(effort ? { reasoningEffort: effort } : {}) });
 
-test('decide seeds, restores, saves and ignores observations while switching', () => {
+test('decide adopts the session model, restores on a mode change and saves manual picks', () => {
   const build = model('build', 'high');
   const plan = model('plan', 'max');
 
+  // A session's first render adopts its model: a saved preset must not override what the user picked.
   const first = core.decide({ mode: null, model: null }, { mode: false, model: build, switching: false });
-  assert.equal(first.action, 'restore');
+  assert.equal(first.action, 'save');
   assert.deepEqual(plain(first.state), { mode: false, model: build });
 
   const stable = core.decide(first.state, { mode: false, model: build, switching: false });
@@ -141,7 +142,11 @@ test('decide seeds, restores, saves and ignores observations while switching', (
   assert.equal(missingModel.action, 'none');
 
   const lateModel = core.decide({ mode: true, model: null }, { mode: true, model: plan, switching: false });
-  assert.equal(lateModel.action, 'restore');
+  assert.equal(lateModel.action, 'save');
+
+  // A projection without a model keeps the last known one instead of forgetting it.
+  const dropped = core.decide(external.state, { mode: true, model: null, switching: false });
+  assert.deepEqual(plain(dropped.state), { mode: true, model: plan });
 });
 
 test('presets persist through the cookie and the localStorage fallback', () => {

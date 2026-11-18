@@ -3,7 +3,7 @@
 [![ci](https://github.com/qrak/dsh-mode-switcher/actions/workflows/ci.yml/badge.svg)](https://github.com/qrak/dsh-mode-switcher/actions/workflows/ci.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Switch **Plan** and **Build** in [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) with `Tab` or a click, and let each mode keep its own **model + reasoning effort**. Set the model once in Plan, once in Build, and the switcher restores the right one on every toggle, `/plan`, `/plan off`, and plan approval.
+Switch **Plan** and **Build** in [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) with `Tab` or a click, and let each mode keep its own **model + reasoning effort**. Set the model once in Plan, once in Build, and the switcher restores the right one on every toggle, `/plan`, `/plan off`, and plan approval. Picking a model in the composer always wins: a saved preset is only applied when the mode changes, never on top of a choice you just made.
 
 This is an independent, MIT-licensed implementation of the idea popularized by [gaoyinxin/dsh-mode-switcher](https://github.com/gaoyinxin/dsh-mode-switcher). It contains no code or assets from that project.
 
@@ -45,7 +45,7 @@ To try a change that is not released yet, install from the repository:
 dsh plugin --profile <your-profile> add git+https://github.com/qrak/dsh-mode-switcher.git#main
 ```
 
-Released versions are tagged `v<version>` (`v1.0.0` … `v1.0.5`), so `#v1.0.5` pins one exactly.
+Released versions are tagged `v<version>` (`v1.0.0` … `v1.0.6`), so `#v1.0.6` pins one exactly.
 
 No build step, no dependencies, nothing to configure after install.
 
@@ -60,7 +60,8 @@ The chip replaces the native Plan-only chip, so it is always visible: `🛠️ B
 
 ## Behaviour and limits
 
-- Presets are **global across sessions** and stored in `localStorage` (Desktop `dsh-app://app`) plus the cookie `dsh_mode_switcher_presets_v1` (browser web UI). If both are blocked, they fall back to memory for the page lifetime. Clearing site data resets them; each mode then re-seeds from the model in use.
+- Presets are **global across sessions** and stored in `localStorage` (Desktop `dsh-app://app`) plus the cookie `dsh_mode_switcher_presets_v1` (browser web UI). If both are blocked, they fall back to memory for the page lifetime. Clearing site data resets them.
+- **Opening a session does not override its model.** A session adopts whatever model the composer shows into the preset for its current mode, and the preset is applied only when the mode changes. Picking a model, or leaving it on the deployment default, therefore stays put until you press `Tab`.
 - Toggle commands are **not echoed into the chat**: the plugin hides the generic `/plan` command rows, so repeated mode switches do not flood the transcript. The chip is the mode indicator.
 - DSH saves the selected model as the deployment default as well; after a mode switch, new sessions start with the model of the mode used last. This is host behaviour, not a plugin setting.
 - The plugin intercepts `Tab` only while the composer has focus and no completion popup is open. If a future DSH version gives `Tab` a different meaning in the composer, disable the plugin or remove the key listener.

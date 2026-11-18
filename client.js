@@ -206,15 +206,18 @@ window.__ModuleLoader__.load({
       return menuOpen !== true;
     }
 
+    // A preset is applied on a mode change only. Restoring it on the first render of a session
+    // overrode the model the user had just picked in the composer, so a session adopts its own
+    // model into the preset for its mode instead, and a manual pick always wins.
     function decide(state, observation) {
       const mode = Boolean(observation.mode);
       const model = normalizeModel(observation.model);
-      const next = { mode, model };
-      if (state.mode === null) return { state: next, action: 'restore' };
+      const next = { mode, model: model === null ? state.model : model };
       if (observation.switching === true) return { state: next, action: 'none' };
-      if (state.mode !== mode) return { state: next, action: 'restore' };
       if (model === null) return { state: next, action: 'none' };
-      if (state.model === null) return { state: next, action: 'restore' };
+      if (state.mode === null) return { state: next, action: 'save' };
+      if (state.mode !== mode) return { state: next, action: 'restore' };
+      if (state.model === null) return { state: next, action: 'save' };
       if (!sameModel(model, state.model)) return { state: next, action: 'save' };
       return { state: next, action: 'none' };
     }
